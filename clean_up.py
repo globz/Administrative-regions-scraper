@@ -76,10 +76,10 @@ def clean_address(address):
     # Check if "Québec" or "Quebec" appears as a standalone part (not as suffix of another region)
     # Look at the 4th part (index 3) which is the city after "POSTAL, City, County, City"
     # For Québec city pattern: "POSTAL, CityName, RegionName, Québec, Quebec / Québec"
-    if len(parts) >= 5:  # Need at least 5 parts to have City in position 3
+    if len(parts) >= 4:  # Need at least 4 parts to have City in position 3
         city_part = parts[3].strip()
-        # If the city (4th part) is Québec/Quebec, return "Québec, Québec"
-        if city_part in ['Québec', 'Quebec']:
+        # If the city (3rd part) is Quebec / Québec, return "Québec, Québec"
+        if city_part in ['Quebec / Québec']:
             return 'Québec, Québec'
     
     # Replace "Quebec" with "Québec" (with proper accent)
