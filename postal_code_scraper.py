@@ -76,7 +76,7 @@ def query_postal_code(postal_code: str, session: requests.Session, max_retries: 
                 import os
                 os.makedirs('debug_responses', exist_ok=True)
                 debug_file = f"debug_responses/debug_{postal_code.replace(' ', '_')}.html"
-                with open(debug_file, 'w', encoding='utf-8') as f:
+                with open(debug_file, 'w', encoding='utf-8-sig') as f:
                     f.write(response.text)
                 print(f"  [DEBUG] Response saved to: {debug_file}")
             
@@ -198,7 +198,7 @@ def process_csv(input_file: str, output_file: str, delay: float = 1.0, verbose: 
     
     # Read input CSV
     try:
-        with open(input_file, 'r', encoding='utf-8') as f:
+        with open(input_file, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
             
             # Check if there's a postal_code column
@@ -248,7 +248,7 @@ def process_csv(input_file: str, output_file: str, delay: float = 1.0, verbose: 
     # Query each postal code
     # Open output file and write header
     try:
-        with open(output_file, 'w', encoding='utf-8', newline='') as f:
+        with open(output_file, 'w', encoding='utf-8-sig', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=['postal_code', 'address'])
             writer.writeheader()
             

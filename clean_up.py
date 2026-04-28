@@ -17,8 +17,8 @@ def clean_address(address):
     4. Handle special cases for provinces and cities
     
     Example:
-    "G0R 1M0, Frampton, La Nouvelle-Beauce, Chaudière - Appalaches, Quebec / Québec"
-    -> "Chaudière - Appalaches, Québec"
+        "G0R 1M0, Frampton, La Nouvelle-Beauce, Chaudière - Appalaches, Quebec / Québec"
+        -> "Chaudière - Appalaches, Québec"
     """
     if not address or address == 'NOT FOUND':
         return address
@@ -72,25 +72,28 @@ def clean_address(address):
         return 'Montréal, Québec'
     
     # Special case: Québec city - should return "Québec, Québec"
-    # Check if the original address has "Québec, Québec" pattern
-    if address.count('Québec') >= 2 or (address.count('Quebec') >= 2):
-        return 'Québec, Québec'
+    # This should ONLY trigger when the city itself is Québec
+    # Check if "Québec" or "Quebec" appears as a standalone part (not as suffix of another region)
+    # Look at the 4th part (index 3) which is the city after "POSTAL, City, County, City"
+    # For Québec city pattern: "POSTAL, CityName, RegionName, Québec, Quebec / Québec"
+    if len(parts) >= 5:  # Need at least 5 parts to have City in position 3
+        city_part = parts[3].strip()
+        # If the city (4th part) is Québec/Quebec, return "Québec, Québec"
+        if city_part in ['Québec', 'Quebec']:
+            return 'Québec, Québec'
     
     # Replace "Quebec" with "Québec" (with proper accent)
     cleaned = cleaned.replace('Quebec', 'Québec')
     
     return cleaned.strip()
 
-
 def process_csv(input_file, output_file):
     """Process the CSV file and clean addresses"""
-    
     results = []
     
     try:
-        with open(input_file, 'r', encoding='utf-8') as f:
+        with open(input_file, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
-            
             for row in reader:
                 postal_code = row['postal_code']
                 address = row['address']
@@ -104,7 +107,7 @@ def process_csv(input_file, output_file):
                 })
         
         # Write cleaned results
-        with open(output_file, 'w', encoding='utf-8', newline='') as f:
+        with open(output_file, 'w', encoding='utf-8-sig', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=['postal_code', 'address'])
             writer.writeheader()
             writer.writerows(results)
@@ -116,7 +119,7 @@ def process_csv(input_file, output_file):
         print("\nExample transformations:")
         for i, row in enumerate(results[:5]):
             print(f"  {row['postal_code']}: {row['address']}")
-        
+    
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found")
         sys.exit(1)
@@ -124,11 +127,10 @@ def process_csv(input_file, output_file):
         print(f"Error: {e}")
         sys.exit(1)
 
-
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python3 clean_addresses.py <input_csv> [output_csv]")
-        print("\nExample: python3 clean_addresses.py output.csv cleaned_output.csv")
+        print("Usage: python3 clean_up.py <input_csv> [output_csv]")
+        print("\nExample: python3 clean_up.py output.csv cleaned_output.csv")
         print("\nThis script will:")
         print("  1. Keep only content after the 3rd comma")
         print("  2. Remove everything after '/' including the slash")
@@ -142,7 +144,6 @@ def main():
     print(f"Output file: {output_file}\n")
     
     process_csv(input_file, output_file)
-
 
 if __name__ == '__main__':
     main()
